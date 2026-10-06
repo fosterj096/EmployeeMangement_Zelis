@@ -1,4 +1,8 @@
 using ZelisEmployeeManager.Components;
+using Microsoft.EntityFrameworkCore;
+using ZelisEmployeeManager.Data;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,7 +10,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("ZelisDBConnString")));
+
+
+
 var app = builder.Build();
+
+// automatically apply "update-database" on app start
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+}
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
