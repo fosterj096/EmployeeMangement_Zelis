@@ -7,6 +7,7 @@ An employee management application built with .NET 10, SQLite, and Blazor.
 1. Clone the repo and run the project
 2. On first run, the app seeds 5 default employees, each with valid employee and address information
 3. From there you can add, edit, and delete employees
+4. Swagger documentation is available through a link in the top left corner of the Employee Manager UI
 
 `Program.cs` calls `db.Database.Migrate()` to automatically apply any pending migrations. It will throw an error if the model has changes that don't have a corresponding migration.
 
