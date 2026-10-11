@@ -1,20 +1,21 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
+<!-- 
+    Updating this main layout page to remove default sidebar and add more custom look
+    also includes link to swagger ui 
+-->
+
+<header class="zl-topbar">
+    <div class="zl-topbar-inner">
+        <a class="zl-brand" href="">
+            <span class="zl-brand-mark" aria-hidden="true"></span>
+            Employee Manager
+        </a>
+        <a class="zl-toplink" href="swagger" target="_blank" rel="noopener">Swagger Documentation</a>
     </div>
+</header>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+@Body
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

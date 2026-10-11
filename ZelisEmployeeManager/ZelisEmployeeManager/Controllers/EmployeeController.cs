@@ -14,7 +14,6 @@ using ZelisEmployeeManager.Models;
 
 */
 
-
 namespace ZelisEmployeeManager.Controllers
 {
     [ApiController]
@@ -87,7 +86,7 @@ namespace ZelisEmployeeManager.Controllers
             var emp = await db.Employees.Include(e => e.Address).FirstOrDefaultAsync(e => e.Id == id);
             if (emp is null) return NotFound();
 
-            db.Employees.Remove(emp);          // cascade removes the Address
+            db.Employees.Remove(emp);  // cascade removes the Address
 
             await db.SaveChangesAsync();
             return NoContent();
@@ -98,12 +97,12 @@ namespace ZelisEmployeeManager.Controllers
             Problem(statusCode: 409, title: "Email already exists.");
 
 
-        // idempotency for if any requests pass multiple "AnyAsync" checks at the same time, the unique index rejects the second reqest
+        // Race-condition safety net: if two requests pass the AnyAsync check concurrently, the unique index rejects the second insert
         private async Task<bool> TrySave()
         {
             try { await db.SaveChangesAsync(); return true; }
             catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: 19 })
-            { return false; }   // 19 = SQLITE_CONSTRAINT
+            { return false; }
         }
     }
 }

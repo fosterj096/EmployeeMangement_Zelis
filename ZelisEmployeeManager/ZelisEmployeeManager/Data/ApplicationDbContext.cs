@@ -14,7 +14,7 @@ namespace ZelisEmployeeManager.Data
 
             modelBuilder.Entity<Employee>(entity =>
             {
-                entity.Property(e => e.Email);
+                entity.Property(e => e.Email).UseCollation("NOCASE"); //ensure case insensitivity for email addresses
                 entity.HasIndex(e => e.Email).IsUnique();
 
                 // cascade delete on foreign key
@@ -24,12 +24,6 @@ namespace ZelisEmployeeManager.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
             });
-
-            //modelBuilder.Entity<Address>(entity =>
-            //{
-
-            //});
-
 
             // data for 5 seeded entries
             modelBuilder.Entity<Employee>().HasData(

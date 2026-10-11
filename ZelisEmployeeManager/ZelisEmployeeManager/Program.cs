@@ -11,7 +11,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-
 // HttpClient for Blazor components to call this app's API
 // ReadME.MD contains details on this decision
 builder.Services.AddScoped(sp =>
@@ -24,10 +23,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ZelisDBConnString")));
 
-
-
 var app = builder.Build();
-
 
 using (var scope = app.Services.CreateScope())
 {

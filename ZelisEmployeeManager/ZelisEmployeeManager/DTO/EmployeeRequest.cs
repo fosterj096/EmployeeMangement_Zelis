@@ -7,9 +7,9 @@ namespace ZelisEmployeeManager.DTO
         [Required] public string FirstName { get; set; } = "";
         [Required] public string LastName { get; set; } = "";
         [Required, EmailAddress] public string Email { get; set; } = "";
-        [Required, RegularExpression(@"^\(\d{3}\)-\d{3}-\d{4}$", ErrorMessage = "Phone must be in format of (XXX)-XXX-XXXX.")]
+
+        [Required, RegularExpression(@"^\(\d{3}\)-\d{3}-\d{4}$", ErrorMessage = "Phone must be in format of (XXX)-XXX-XXXX")]
         public string Phone { get; set; } = "";
-        [Range(16, 120)] public int Age { get; set; }
         [Required] public AddressDto Address { get; set; } = new();
     }
 }

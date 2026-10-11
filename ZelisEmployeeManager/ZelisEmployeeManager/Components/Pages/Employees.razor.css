@@ -1,0 +1,373 @@
+/* ---------- Palette (swap in the exact brand values here) ---------- */
+.zl-page {
+    --zl-ink: #23004b;        /* deep purple (provided) */
+    --zl-violet: #4a2cf0;     /* bright violet, estimated from screenshot */
+    --zl-gold: #f2b42c;       /* CTA gold, estimated from screenshot */
+    --zl-lavender: #f5f3fb;   /* page wash */
+    --zl-line: #e3dff0;
+    --zl-muted: #6b5f80;
+    --zl-danger: #c4204a;
+    --zl-success: #0f7b5c;
+
+    font-family: "Outfit", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--zl-ink);
+    background: var(--zl-lavender);
+    min-height: 100vh;
+}
+
+/* ---------- Hero band with slanted-line motif ---------- */
+.zl-hero {
+    position: relative;
+    overflow: hidden;
+    background: var(--zl-ink);
+    color: #fff;
+    padding: 2.5rem 1.5rem 4.5rem;
+}
+
+.zl-hero::before {            /* thin diagonal rule */
+    content: "";
+    position: absolute;
+    top: -40%;
+    right: 14%;
+    width: 1px;
+    height: 180%;
+    background: rgba(255, 255, 255, .2);
+    transform: rotate(30deg);
+}
+
+.zl-hero::after {             /* violet parallelogram accent */
+    content: "";
+    position: absolute;
+    left: -2rem;
+    bottom: -.5rem;
+    width: 8rem;
+    height: 3.5rem;
+    background: var(--zl-violet);
+    transform: skewX(-30deg);
+}
+
+.zl-hatch {                   /* hatched stripe along the bottom edge */
+    position: absolute;
+    right: 4%;
+    bottom: 0;
+    width: min(420px, 60%);
+    height: 64px;
+    background: repeating-linear-gradient(-60deg, transparent 0 10px, rgba(255, 255, 255, .18) 10px 12px);
+}
+
+.zl-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.zl-eyebrow {
+    margin: 0 0 .5rem;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--zl-gold);
+}
+
+.zl-hero h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+.zl-sub {
+    margin: .5rem 0 0;
+    opacity: .8;
+}
+
+/* ---------- Layout ---------- */
+.zl-grid {
+    position: relative;
+    max-width: 1200px;
+    margin: -2.5rem auto 0;   /* cards overlap the hero */
+    padding: 0 1.5rem 3rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .zl-grid { grid-template-columns: 1fr; }
+}
+
+.zl-card {
+    background: #fff;
+    border: 1px solid var(--zl-line);
+    border-radius: 4px;
+    padding: 1.5rem;
+    box-shadow: 0 12px 32px -20px rgba(35, 0, 75, .4);
+}
+
+.zl-tab {                     /* slanted section label */
+    display: inline-block;
+    margin: 0 0 1.25rem;
+    padding: .35rem 1.1rem;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #fff;
+    background: var(--zl-ink);
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+
+/* ---------- Table ---------- */
+.zl-table-wrap { overflow-x: auto; }
+
+.zl-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .95rem;
+}
+
+.zl-table th {
+    padding: 0 .75rem .6rem;
+    text-align: left;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--zl-muted);
+    border-bottom: 2px solid var(--zl-ink);
+}
+
+.zl-table td {
+    padding: .85rem .75rem;
+    border-bottom: 1px solid var(--zl-line);
+    vertical-align: middle;
+}
+
+.zl-table tbody tr {
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.zl-table tbody tr:hover { background: var(--zl-lavender); }
+
+.zl-table tbody tr:focus-visible {
+    outline: 2px solid var(--zl-violet);
+    outline-offset: -2px;
+}
+
+.zl-table tbody tr.is-selected {
+    background: #ece8fb;
+    box-shadow: inset 4px 0 0 var(--zl-violet);
+}
+
+.zl-hint {
+    margin: -.5rem 0 1rem;
+    font-size: .85rem;
+    color: var(--zl-muted);
+}
+
+.zl-person {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.zl-initials {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: .78rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--zl-violet);
+    clip-path: polygon(25% 0, 100% 0, 75% 100%, 0 100%);
+}
+
+.zl-phone {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.zl-address { color: var(--zl-muted); }
+
+.is-new { animation: zl-flash 2.4s ease-out; }
+
+@keyframes zl-flash {
+    from { background: #fff1c9; }
+    to   { background: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-new { animation: none; background: #fff8e3; }
+}
+
+/* ---------- Form ---------- */
+.zl-form {
+    display: grid;
+    gap: .9rem;
+}
+
+.zl-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .9rem;
+}
+
+.zl-row-3 { grid-template-columns: 1fr 70px 100px; }
+
+@media (max-width: 520px) {
+    .zl-row, .zl-row-3 { grid-template-columns: 1fr; }
+}
+
+.zl-field {
+    display: grid;
+    gap: .3rem;
+    align-content: start;
+    font-size: .8rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+}
+
+.zl-field .optional {
+    font-style: normal;
+    font-weight: 400;
+    color: var(--zl-muted);
+}
+
+/* InputText / ValidationMessage are child components, so their elements need ::deep */
+.zl-field ::deep input {
+    width: 100%;
+    padding: .6rem .7rem;
+    font: inherit;
+    font-size: .95rem;
+    font-weight: 400;
+    color: var(--zl-ink);
+    background: #fff;
+    border: 1px solid var(--zl-line);
+    border-bottom: 2px solid var(--zl-ink);
+    border-radius: 0;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.zl-field ::deep input:focus {
+    border-color: var(--zl-violet);
+    box-shadow: 0 0 0 3px rgba(74, 44, 240, .15);
+}
+
+.zl-field ::deep input.valid.modified { outline: none; }
+
+.zl-field ::deep input.invalid {
+    outline: none;
+    border-bottom-color: var(--zl-danger);
+}
+
+.zl-field ::deep .validation-message {
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--zl-danger);
+}
+
+.zl-divider {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: .4rem 0 0;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--zl-muted);
+}
+
+.zl-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--zl-line);
+}
+
+.zl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    margin-top: .4rem;
+}
+
+.zl-btn {
+    padding: .8rem 1.4rem;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--zl-ink);
+    background: var(--zl-gold);
+    border: 0;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+}
+
+.zl-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -8px rgba(35, 0, 75, .5);
+}
+
+.zl-btn:focus-visible {
+    outline: 3px solid var(--zl-violet);
+    outline-offset: 2px;
+}
+
+.zl-btn:disabled {
+    opacity: .6;
+    cursor: progress;
+}
+
+.zl-btn-ghost {
+    background: transparent;
+    box-shadow: inset 0 0 0 2px var(--zl-ink);
+}
+
+.zl-btn-danger {
+    margin-left: auto;          /* push delete away from save */
+    color: var(--zl-danger);
+    background: transparent;
+    box-shadow: inset 0 0 0 2px var(--zl-danger);
+}
+
+.zl-btn-danger.is-armed {
+    color: #fff;
+    background: var(--zl-danger);
+}
+
+/* ---------- Messages ---------- */
+.zl-alert {
+    margin: 0 0 1rem;
+    padding: .75rem 1rem;
+    font-size: .9rem;
+    border-left: 4px solid;
+}
+
+.zl-alert ul {
+    margin: 0;
+    padding-left: 1rem;
+}
+
+.zl-alert-error {
+    border-color: var(--zl-danger);
+    background: #fdecef;
+    color: #7a0f2b;
+}
+
+.zl-alert-success {
+    border-color: var(--zl-success);
+    background: #e7f6f0;
+    color: #0b5640;
+}
+
+.zl-muted { color: var(--zl-muted); }

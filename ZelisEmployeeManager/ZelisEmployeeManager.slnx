@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="ZelisEmployeeManager/ZelisEmployeeManager.csproj" />
+  <Project Path="ZelisTest/ZelisTest.csproj" Id="8f0516da-a9bd-4ae8-b0d9-a93e5312cdd7" />
 </Solution>

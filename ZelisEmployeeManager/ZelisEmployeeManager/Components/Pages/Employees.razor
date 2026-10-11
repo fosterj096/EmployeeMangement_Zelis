@@ -1,0 +1,446 @@
+@page "/"
+@rendermode InteractiveServer
+@using System.Net
+@using System.Text.Json
+@using ZelisEmployeeManager.DTO
+@inject HttpClient Http
+
+<PageTitle>Employee Directory</PageTitle>
+
+<div class="zl-page">
+    <header class="zl-hero">
+        <div class="zl-hero-inner">
+            <p class="zl-eyebrow">People</p>
+            <h1>Employee Directory</h1>
+            <p class="zl-sub">@CountLabel</p>
+        </div>
+        <span class="zl-hatch" aria-hidden="true"></span>
+    </header>
+
+    <main class="zl-grid">
+        @* current employee table *@
+        <section class="zl-card">
+            <h2 class="zl-tab">Team</h2>
+            <p class="zl-hint">Select a row to edit or delete.</p>
+
+            @if (loadError is not null)
+            {
+                <p class="zl-alert zl-alert-error">@loadError</p>
+            }
+            else if (employees is null)
+            {
+                <p class="zl-muted">Loading…</p>
+            }
+            else if (employees.Count == 0)
+            {
+                <p class="zl-muted">No employees yet. Add one to get started.</p>
+            }
+            else
+            {
+                <div class="zl-table-wrap">
+                    <table class="zl-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email address</th>
+                                <th>Phone number</th>
+                                <th>Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in employees)
+                            {
+                                <tr @key="e.Id" class="@RowClass(e)" tabindex="0"
+                                    aria-selected="@(e.Id == editingId)"
+                                    @onclick="() => StartEdit(e)"
+                                    @onkeydown="@(k => { if (k.Key == "Enter") StartEdit(e); })">
+                                    <td>
+                                        <span class="zl-person">
+                                            <span class="zl-initials" aria-hidden="true">@Initials(e)</span>
+                                            @e.FirstName @e.LastName
+                                        </span>
+                                    </td>
+                                    <td>@e.Email</td>
+                                    <td class="zl-phone">@e.Phone</td>
+                                    <td class="zl-address">@FormatAddress(e.Address)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        @* add employee form *@
+        <section class="zl-card">
+            <h2 class="zl-tab">@(IsEditing ? "Edit employee" : "Add employee")</h2>
+
+            @if (successMessage is not null)
+            {
+                <p class="zl-alert zl-alert-success" role="status">@successMessage</p>
+            }
+            @if (formErrors.Count > 0)
+            {
+                <div class="zl-alert zl-alert-error" role="alert">
+                    <ul>
+                        @foreach (var msg in formErrors)
+                        {
+                            <li>@msg</li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <EditForm EditContext="editContext" OnSubmit="SubmitAsync">
+                <DataAnnotationsValidator />
+
+                <div class="zl-form">
+                    <div class="zl-row">
+                        <label class="zl-field">
+                            <span>First name</span>
+                            <InputText @bind-Value="model.FirstName" autocomplete="given-name" />
+                            <ValidationMessage For="() => model.FirstName" />
+                        </label>
+                        <label class="zl-field">
+                            <span>Last name</span>
+                            <InputText @bind-Value="model.LastName" autocomplete="family-name" />
+                            <ValidationMessage For="() => model.LastName" />
+                        </label>
+                    </div>
+
+                    <label class="zl-field">
+                        <span>Email address</span>
+                        <InputText @bind-Value="model.Email" type="email" autocomplete="email" />
+                        <ValidationMessage For="() => model.Email" />
+                    </label>
+
+                    <div class="zl-row">
+                        <label class="zl-field">
+                            <span>Phone number</span>
+                            <InputText @bind-Value="model.Phone" placeholder="(555)-123-4567" autocomplete="tel" />
+                            <ValidationMessage For="() => model.Phone" />
+                        </label>
+                    </div>
+
+                    <p class="zl-divider">Address</p>
+
+                    <label class="zl-field">
+                        <span>Address 1</span>
+                        <InputText @bind-Value="model.Address.Address1" autocomplete="address-line1" />
+                        <ValidationMessage For="() => model.Address.Address1" />
+                    </label>
+
+                    <label class="zl-field">
+                        <span>Address 2 <em class="optional">optional</em></span>
+                        <InputText @bind-Value="model.Address.Address2" autocomplete="address-line2" />
+                        <ValidationMessage For="() => model.Address.Address2" />
+                    </label>
+
+                    <div class="zl-row zl-row-3">
+                        <label class="zl-field">
+                            <span>City</span>
+                            <InputText @bind-Value="model.Address.City" autocomplete="address-level2" />
+                            <ValidationMessage For="() => model.Address.City" />
+                        </label>
+                        <label class="zl-field">
+                            <span>State</span>
+                            <InputText @bind-Value="model.Address.State" maxlength="2" placeholder="MO" />
+                            <ValidationMessage For="() => model.Address.State" />
+                        </label>
+                        <label class="zl-field">
+                            <span>Zip</span>
+                            <InputText @bind-Value="model.Address.Zip" maxlength="5" inputmode="numeric" placeholder="63101" />
+                            <ValidationMessage For="() => model.Address.Zip" />
+                        </label>
+                    </div>
+
+                    <div class="zl-actions">
+                        <button type="submit" class="zl-btn" disabled="@submitting">
+                            @(submitting ? "Saving…" : IsEditing ? "Save changes" : "Add employee")
+                        </button>
+
+                        @if (IsEditing)
+                        {
+                            <button type="button" class="zl-btn zl-btn-ghost" @onclick="CancelEdit" disabled="@submitting">
+                                Cancel
+                            </button>
+                            @* add confirm for delete action *@
+                            <button type="button" class="zl-btn zl-btn-danger @(confirmingDelete ? "is-armed" : null)"
+                                    @onclick="DeleteAsync" disabled="@submitting">
+                                @(confirmingDelete ? "Confirm delete" : "Delete")
+                            </button>
+                        }
+                    </div>
+                </div>
+            </EditForm>
+        </section>
+    </main>
+</div>
+
+@code {
+    // ---- table state ----
+    private List<EmployeeResponse>? employees;
+    private string? loadError;
+    private int? highlightId;   // briefly highlights the row that was just added
+
+    // ---- form state ----
+    private EmployeeRequest model = new();
+    private EditContext editContext = default!;
+    private ValidationMessageStore serverErrors = default!;   // errors returned by the API, shown under their fields
+    private readonly List<string> formErrors = new();         // API errors without field mapping
+    private string? successMessage;
+    private bool submitting;
+
+    // ---- edit / delete state ----
+    private int? editingId;            // null = add mode
+    private string? editingName;       // original name, for messages
+    private bool confirmingDelete;
+    private bool IsEditing => editingId is not null;
+
+    // Shape of ASP.NET Core's ProblemDetails / ValidationProblemDetails responses
+    private sealed record ApiProblem(string? Title, Dictionary<string, string[]>? Errors);
+
+    protected override async Task OnInitializedAsync()
+    {
+        ResetForm();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            employees = await Http.GetFromJsonAsync<List<EmployeeResponse>>("api/employees") ?? [];
+            loadError = null;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or JsonException or NotSupportedException)
+        {
+            loadError = "Couldn't load employees from the API.";
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        // clear any and all previous errors first, Validate() will block a corrected resubmitted form without clearing errors first
+        serverErrors.Clear();
+        formErrors.Clear();
+        successMessage = null;
+
+        if (!editContext.Validate()) return;
+
+        submitting = true;
+        try
+        {
+            // same form for adding or edting, PUT vs POST
+            using var response = IsEditing
+                ? await Http.PutAsJsonAsync($"api/employees/{editingId}", model)
+                : await Http.PostAsJsonAsync("api/employees", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                if (IsEditing)
+                {
+                    successMessage = $"Saved {model.FirstName} {model.LastName}.";
+                    highlightId = editingId;
+                }
+                else
+                {
+                    var created = await response.Content.ReadFromJsonAsync<EmployeeResponse>();
+                    successMessage = $"Added {model.FirstName} {model.LastName}.";
+                    highlightId = created?.Id;
+                }
+
+                ExitEditMode();
+                await LoadAsync();
+                return;
+            }
+
+            await ShowProblemAsync(response);
+        }
+        catch (HttpRequestException)
+        {
+            formErrors.Add("Couldn't reach the API.");
+        }
+        finally
+        {
+            submitting = false;
+        }
+    }
+
+    // map API error responses onto the form
+    //  409 -> Email field
+    //  400 -> each field's errors
+    private async Task ShowProblemAsync(HttpResponseMessage response)
+    {
+        ApiProblem? problem = null;
+        try { problem = await response.Content.ReadFromJsonAsync<ApiProblem>(); }
+        catch (Exception ex) when (ex is JsonException or NotSupportedException) { /* non-JSON body */ }
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            formErrors.Add("This employee no longer exists. It may have been deleted.");
+        }
+        else if (response.StatusCode == HttpStatusCode.Conflict)
+        {
+            serverErrors.Add(editContext.Field(nameof(EmployeeRequest.Email)),
+                             problem?.Title ?? "Email already exists.");
+        }
+        else if (problem?.Errors is { Count: > 0 } errors)
+        {
+            foreach (var (key, messages) in errors)
+            {
+                if (ToField(key) is { } field) serverErrors.Add(field, messages);
+                else formErrors.AddRange(messages);
+            }
+        }
+        else
+        {
+            formErrors.Add(problem?.Title ?? $"Request failed ({(int)response.StatusCode}).");
+        }
+
+        editContext.NotifyValidationStateChanged();
+    }
+
+    // Turns an API error key ("Phone", "Address.Zip", "$.address.zip") into the matching form field
+    // Returns null for keys with no input on the form, so they show in the banner instead
+    private FieldIdentifier? ToField(string key)
+    {
+        static string Pascal(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
+        var parts = key.TrimStart('$', '.').Split('.');
+
+        return parts switch
+        {
+            [var name] when Pascal(name) != nameof(EmployeeRequest.Address)
+                         && typeof(EmployeeRequest).GetProperty(Pascal(name)) is not null
+                => new FieldIdentifier(model, Pascal(name)),
+
+            [var parent, var name] when parent.Equals(nameof(EmployeeRequest.Address), StringComparison.OrdinalIgnoreCase)
+                                     && typeof(AddressDto).GetProperty(Pascal(name)) is not null
+                => new FieldIdentifier(model.Address, Pascal(name)),
+
+            _ => null
+        };
+    }
+
+    //  edit / delete 
+
+    private void StartEdit(EmployeeResponse e)
+    {
+        editingId = e.Id;
+        editingName = $"{e.FirstName} {e.LastName}";
+        confirmingDelete = false;
+        successMessage = null;
+        formErrors.Clear();
+        ResetForm(ToRequest(e));
+    }
+
+    private void CancelEdit()
+    {
+        formErrors.Clear();
+        ExitEditMode();
+    }
+
+    private void ExitEditMode()
+    {
+        editingId = null;
+        editingName = null;
+        confirmingDelete = false;
+        ResetForm();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (editingId is not int id) return;
+
+        if (!confirmingDelete)          // require confirmation to delete employee
+        {
+            confirmingDelete = true;
+            return;
+        }
+
+        formErrors.Clear();
+        successMessage = null;
+        submitting = true;
+        try
+        {
+            using var response = await Http.DeleteAsync($"api/employees/{id}");
+
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                successMessage = response.StatusCode == HttpStatusCode.NotFound
+                    ? "That employee was already removed."
+                    : $"Deleted {editingName}.";
+                highlightId = null;
+                ExitEditMode();
+                await LoadAsync();
+                return;
+            }
+
+            await ShowProblemAsync(response);
+        }
+        catch (HttpRequestException)
+        {
+            formErrors.Add("Couldn't reach the API.");
+        }
+        finally
+        {
+            submitting = false;
+            confirmingDelete = false;
+        }
+    }
+
+    // copy into a NEW request object
+    // binding the form to the row's own AddressDto would change the table as the user types, before anything is saved
+    private static EmployeeRequest ToRequest(EmployeeResponse e) => new()
+    {
+        FirstName = e.FirstName,
+        LastName = e.LastName,
+        Email = e.Email,
+        Phone = e.Phone,
+        Address = new AddressDto
+        {
+            Address1 = e.Address.Address1,
+            Address2 = e.Address.Address2,
+            City = e.Address.City,
+            State = e.Address.State,
+            Zip = e.Address.Zip
+        }
+    };
+
+    private string? RowClass(EmployeeResponse e) =>
+        e.Id == editingId ? "is-selected"
+        : e.Id == highlightId ? "is-new"
+        : null;
+
+    // called on page and when editing form to clean up form
+
+    private void ResetForm(EmployeeRequest? source = null)
+    {
+        if (editContext is not null) editContext.OnFieldChanged -= ClearServerError;
+
+        model = source ?? new EmployeeRequest();
+        editContext = new EditContext(model);
+        serverErrors = new ValidationMessageStore(editContext);
+        editContext.OnFieldChanged += ClearServerError;
+    }
+
+    // clear error api response after addresseing error
+    private void ClearServerError(object? sender, FieldChangedEventArgs e)
+    {
+        serverErrors.Clear(e.FieldIdentifier);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    private string CountLabel => employees is null
+        ? "Loading…"
+        : $"{employees.Count} {(employees.Count == 1 ? "person" : "people")}";
+
+    private static string Initials(EmployeeResponse e) =>
+        $"{e.FirstName.FirstOrDefault()}{e.LastName.FirstOrDefault()}".ToUpperInvariant();
+
+    private static string FormatAddress(AddressDto a)
+    {
+        var street = string.IsNullOrWhiteSpace(a.Address2) ? a.Address1 : $"{a.Address1}, {a.Address2}";
+        return $"{street}, {a.City}, {a.State} {a.Zip}";
+    }
+}

@@ -109,7 +109,8 @@ namespace ZelisEmployeeManager.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
