@@ -44,6 +44,30 @@ I created an xUnit test project through the Visual Studio UI and added the `Micr
 
 Tests are run with **Test > Run All Tests**.
 
+## Considerations and What Could've Been Done Differently
+
+The biggest consideration is that this app runs Blazor in the Interactive Server mode, so the
+Employees page executes on the server, not in the browser. To meet the requirement that the UI only reach the database through the API, the page uses an `HttpClient` that calls the
+app's API endpoints over HTTP.
+
+The client's base address comes from `NavigationManager.BaseUri`, which provides the address the browser used to reach the app. I chose this route because it works on any port without a hardcoded URL, so
+the project runs correctly after cloning with no configuration.
+
+I wouldn't use this approach in production for a few reasons:
+
+- The server may not be able to reach its own public URL: `BaseUri` is the browser-facing address. When you run this locally, that's the same machine, but behind a reverse proxy, a load
+  balancer, or in a container, the server may not be able to reach that address.
+  
+- No auth is forwarded: The server-side `HttpClient` doesn't carry any of the user's cookies or tokens. Auth was out of scope for this assessment, but adding it would require passing tokens explicitly.
+  
+- It doesn't use `IHttpClientFactory`: One `HttpClient` is created per user circuit instead of being managed by the factory.
+
+In production I'd configure the API base URL in `appsettings.json` and register a typed client through `IHttpClientFactory`. 
+Alternatively, Interactive WebAssembly would run the page in the browser, which makes calling the API the standard design and lets auth flow
+with the browser's requests. The drawback to that for this assessment is that that approach costs a separate `.Client` project and a shared project for
+the DTOs, which I thought was a bit overkill for this single-page assessment.
+
+
 ## Packages Used
 
 - Microsoft.AspNetCore.OpenApi
